@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Cargo.toml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Leer la versión de Cargo.toml
+        id: version
+        shell: pwsh
+        run: |
+          $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Versión: $version"
+
+      - name: Comprobar si el tag ya existe
+        id: tag
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "v${{ steps.version.outputs.version }}"
+          git fetch --tags --quiet
+          $exists = git tag --list $tag
+          if ($exists) {
+            Write-Host "El tag $tag ya existe; no se publica release."
+            "exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
+      - name: Caché de cargo
+        if: steps.tag.outputs.exists == 'false'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Compilar
+        if: steps.tag.outputs.exists == 'false'
+        run: cargo build --release
+
+      - name: Empaquetar el .scr en un zip (compresión máxima)
+        if: steps.tag.outputs.exists == 'false'
+        shell: pwsh
+        run: |
+          Copy-Item target\release\paper_plane.exe paper_plane.scr
+          7z a -tzip -mx=9 "paper_plane-v${{ steps.version.outputs.version }}.zip" paper_plane.scr
+
+      - name: Publicar el release
+        if: steps.tag.outputs.exists == 'false'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "v${{ steps.version.outputs.version }}"
+          gh release create $tag `
+            --title $tag `
+            --generate-notes `
+            "paper_plane-v${{ steps.version.outputs.version }}.zip"
