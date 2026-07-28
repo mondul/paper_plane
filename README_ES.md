@@ -26,6 +26,18 @@ copy target\release\paper_plane.exe paper_plane.scr
    seleccionarlo en Configuración → Personalización → Pantalla de bloqueo →
    Protector de pantalla.
 
+> [!NOTE]
+> **Advertencia de SmartScreen.** El binario no está firmado digitalmente, así
+> que la primera vez que se ejecute Windows puede mostrar el aviso *"Windows
+> protegió su PC"*. Haz clic en **Más información** y luego en **Ejecutar de
+> todas formas** — solo es necesario hacerlo una vez.
+>
+> Para evitar sorpresas, se recomienda **ejecutar el `.scr` una vez antes de
+> instalarlo** (haz doble clic sobre él; se abrirá el diálogo de
+> configuración). Así el aviso de SmartScreen aparece en ese momento y puede
+> aceptarse, en lugar de bloquear silenciosamente el protector más tarde,
+> cuando Windows intente iniciarlo.
+
 ## Argumentos (estándar de protectores de pantalla)
 
 | Argumento | Función |

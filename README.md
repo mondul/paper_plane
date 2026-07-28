@@ -25,6 +25,16 @@ copy target\release\paper_plane.exe paper_plane.scr
 2. Copy `paper_plane.scr` to `C:\Windows\System32` (or any folder) and select
    it under Settings → Personalization → Lock screen → Screen saver.
 
+> [!NOTE]
+> **SmartScreen warning.** The binary is not digitally signed, so the first
+> time it runs Windows may show a *"Windows protected your PC"* dialog. Click
+> **More info** and then **Run anyway** — this only needs to be done once.
+>
+> To avoid any surprises, it is recommended to **run the `.scr` once before
+> installing it** (double-click it; the configuration dialog will open). That
+> way the SmartScreen prompt appears right there and can be accepted, instead
+> of silently blocking the screensaver later when Windows tries to launch it.
+
 ## Arguments (standard screensaver interface)
 
 | Argument | Function |
