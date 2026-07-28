@@ -2,6 +2,7 @@
 
 mod config;
 mod dialog;
+mod lang;
 mod mesh;
 mod renderer;
 mod scene;

@@ -21,6 +21,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 use windows::core::{PCWSTR, w};
 
 use crate::config::{Config, MAX_PLANES, MAX_SPEED, MIN_PLANES, MIN_SPEED};
+use crate::lang::{texts, to_wide};
 
 const ID_OK: usize = 1; // IDOK
 const ID_CANCEL: usize = 2; // IDCANCEL
@@ -40,10 +41,6 @@ struct Ui {
 
 thread_local! {
     static UI: RefCell<Option<Ui>> = const { RefCell::new(None) };
-}
-
-fn to_wide(s: &str) -> Vec<u16> {
-    s.encode_utf16().chain(std::iter::once(0)).collect()
 }
 
 fn slider_pos(slider: HWND) -> u32 {
@@ -130,6 +127,14 @@ pub fn run_config(parent: Option<HWND>) {
         RegisterClassW(&wc);
 
         let cfg = Config::load();
+        let txt = texts();
+        // Los Vec<u16> deben seguir vivos mientras se usan sus punteros;
+        // CreateWindowExW y SetWindowTextW copian el contenido.
+        let title_w = to_wide(txt.config_title);
+        let plane_count_w = to_wide(txt.plane_count);
+        let speed_w = to_wide(txt.speed);
+        let ok_w = to_wide(txt.ok);
+        let cancel_w = to_wide(txt.cancel);
 
         // Layout en píxeles lógicos (96 dpi), escalado según el DPI del sistema.
         let dpi = GetDpiForSystem();
@@ -155,7 +160,7 @@ pub fn run_config(parent: Option<HWND>) {
         let hwnd = CreateWindowExW(
             ex_style,
             class_name,
-            w!("Aviones de papel — Configuración"),
+            PCWSTR(title_w.as_ptr()),
             style | WS_VISIBLE,
             x,
             y,
@@ -226,7 +231,7 @@ pub fn run_config(parent: Option<HWND>) {
 
         make(
             static_class,
-            w!("Cantidad de aviones:"),
+            PCWSTR(plane_count_w.as_ptr()),
             WINDOW_STYLE(0),
             16,
             14,
@@ -257,7 +262,7 @@ pub fn run_config(parent: Option<HWND>) {
 
         make(
             static_class,
-            w!("Velocidad:"),
+            PCWSTR(speed_w.as_ptr()),
             WINDOW_STYLE(0),
             16,
             86,
@@ -288,7 +293,7 @@ pub fn run_config(parent: Option<HWND>) {
 
         make(
             button_class,
-            w!("Aceptar"),
+            PCWSTR(ok_w.as_ptr()),
             WINDOW_STYLE(BS_DEFPUSHBUTTON as u32) | WS_TABSTOP,
             148,
             160,
@@ -298,7 +303,7 @@ pub fn run_config(parent: Option<HWND>) {
         );
         make(
             button_class,
-            w!("Cancelar"),
+            PCWSTR(cancel_w.as_ptr()),
             WINDOW_STYLE(BS_PUSHBUTTON as u32) | WS_TABSTOP,
             240,
             160,

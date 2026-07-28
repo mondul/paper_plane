@@ -19,6 +19,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 use windows::core::w;
 
 use crate::config::Config;
+use crate::lang::{texts, to_wide};
 use crate::renderer::{Gpu, Renderer, create_instance, create_surface_for_hwnd};
 use crate::scene::{InstanceRaw, Scene};
 
@@ -228,11 +229,12 @@ pub fn run_preview(parent: HWND) {
 pub fn run_windowed() {
     let class = register_class();
     let hinstance = unsafe { GetModuleHandleW(None).unwrap() };
+    let title_w = to_wide(texts().windowed_title);
     let hwnd = unsafe {
         CreateWindowExW(
             Default::default(),
             class,
-            w!("Paper Plane (modo ventana)"),
+            windows::core::PCWSTR(title_w.as_ptr()),
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
